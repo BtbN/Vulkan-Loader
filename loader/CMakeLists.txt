@@ -329,11 +329,11 @@ else()
         )
 # cmake-format: on
     endif()
+endif()
 
     if(NOT APPLE)
         target_compile_definitions(vulkan PRIVATE _XOPEN_SOURCE=500) # hush compiler warnings for readlink
     endif()
-endif()
 
 # Generate pkg-config file.
 include(FindPkgConfig QUIET)
