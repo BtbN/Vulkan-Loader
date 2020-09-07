@@ -24,6 +24,11 @@
 #pragma once
 
 #if defined(_WIN32)
+
+#define WINVER 0x0601
+#define _WIN32_WINNT 0x0601
+#define STRSAFE_NO_DEPRECATE 1
+
 // WinSock2.h must be included *BEFORE* windows.h
 #include <winsock2.h>
 #endif  // _WIN32
