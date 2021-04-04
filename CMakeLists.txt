@@ -40,9 +40,7 @@ if(BUILD_TESTS)
     enable_testing()
 endif()
 
-if(APPLE)
     option(BUILD_STATIC_LOADER "Build a loader that can be statically linked" OFF)
-endif()
 
 if(BUILD_STATIC_LOADER)
     message(WARNING "The BUILD_STATIC_LOADER option has been set. Note that this will only work on MacOS and is not supported "

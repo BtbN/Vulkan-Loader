@@ -224,6 +224,22 @@ if(WIN32)
     target_compile_options(loader-opt PUBLIC ${MSVC_LOADER_COMPILE_OPTIONS})
     target_include_directories(loader-opt PRIVATE "$<TARGET_PROPERTY:Vulkan::Headers,INTERFACE_INCLUDE_DIRECTORIES>")
 
+    if(BUILD_STATIC_LOADER)
+    add_library(vulkan
+                STATIC
+                $<TARGET_OBJECTS:loader-opt>
+                $<TARGET_OBJECTS:loader-norm>
+                $<TARGET_OBJECTS:loader-unknown-chain>
+                ${CMAKE_CURRENT_SOURCE_DIR}/vulkan-1.def
+                ${CMAKE_CURRENT_SOURCE_DIR}/loader.rc)
+    set_target_properties(vulkan
+                          PROPERTIES LINK_FLAGS_DEBUG
+                                     "/ignore:4098"
+                                     OUTPUT_NAME
+                                     vulkan-1
+                                     PREFIX
+                                     lib)
+    else()
     add_library(vulkan
                 SHARED
                 $<TARGET_OBJECTS:loader-opt>
@@ -238,6 +254,8 @@ if(WIN32)
     set_target_properties(vulkan
                           PROPERTIES
                           OUTPUT_NAME vulkan-1)
+    set_property(DIRECTORY APPEND PROPERTY COMPILE_DEFINITIONS LOADER_DYNAMIC_LIB)
+    endif()
 
     target_link_libraries(vulkan Vulkan::Headers)
 
@@ -260,17 +278,19 @@ else()
         set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-typedef-redefinition")
     endif()
 
-    if(APPLE AND BUILD_STATIC_LOADER)
+    if(BUILD_STATIC_LOADER)
         add_library(vulkan STATIC ${NORMAL_LOADER_SRCS} ${OPT_LOADER_SRCS})
     else()
         add_library(vulkan SHARED ${NORMAL_LOADER_SRCS} ${OPT_LOADER_SRCS})
     endif()
     add_dependencies(vulkan loader_asm_gen_files)
+    if (NOT BUILD_STATIC_LOADER)
     set_target_properties(vulkan
                           PROPERTIES SOVERSION
                                      "1"
                                      VERSION
                                      "${VulkanHeaders_VERSION_MAJOR}.${VulkanHeaders_VERSION_MINOR}.${VulkanHeaders_VERSION_PATCH}")
+    endif()
     target_link_libraries(vulkan ${CMAKE_DL_LIBS} m)
     if (NOT ANDROID)
         target_link_libraries(vulkan pthread)
@@ -342,6 +362,7 @@ if(PKG_CONFIG_FOUND)
     foreach(LIB ${CMAKE_CXX_IMPLICIT_LINK_LIBRARIES} ${PLATFORM_LIBS})
         set(PRIVATE_LIBS "${PRIVATE_LIBS} -l${LIB}")
     endforeach()
+    set(PRIVATE_LIBS "${PRIVATE_LIBS} -lshlwapi -lcfgmgr32")
     if(WIN32)
         set(VULKAN_LIB_SUFFIX "-1")
     endif ()
