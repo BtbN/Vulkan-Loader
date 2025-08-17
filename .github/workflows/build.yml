@@ -411,6 +411,9 @@ jobs:
         needs: linux-no-asm
         runs-on: windows-2022
         timeout-minutes: 30
+        strategy:
+            matrix:
+                arch: [ x86_64, i686 ]
         defaults:
             run:
                 shell: bash
@@ -425,6 +428,8 @@ jobs:
                 -D CMAKE_BUILD_TYPE=Release \
                 -D BUILD_WERROR=ON \
                 -D USE_GAS=ON \
+                -D CMAKE_C_COMPILER=${{ matrix.arch }}-w64-mingw32-gcc \
+                -D CMAKE_CXX_COMPILER=${{ matrix.arch }}-w64-mingw32-g++ \
                 -G Ninja
             - run: cmake --build build
             - run: cmake --install build --prefix /tmp
